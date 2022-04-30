@@ -91,17 +91,40 @@ const DeclarativeList3 = () => {
 // * 함수형으로 해결하는 방법 (2)
 // 위의 코드를 리팩터링하자. 값을 가져오는 함수를 일반화해보기
 
-const getPrice = (name: string) => {
+// string 은 정의역, number, undefined 는 공역이 된다. 치역은 5000, 10000, 15000, undefined 가 된다
+// 구현 코드를 보지 않고 타입만 갖고도 그 함수의 정보를 아는 경우가 존재한다.
+const getPrice = (name: string): number | undefined => {
     if(name === "apple") return 5000
     else if(name === "orange") return 10000
     else if(name === "mango") return 15000
 }
 
-// 한 번 더 리팩터링 해보자.
-// 같은 값에 대해서는 같은 값을 출력한다.
-const priceOfFruit = {
-    apple: 5000,
-    orange: 10000,
-    mango: 15000
+
+// price: number 로만 타입을 주면 getPrice 의 공역과 isExpensive 의 정의역이 같지 않으므로 에러 발생
+// number | undefined 로 동일하게 가야 한다.
+const isExpensive = (price: number | undefined) => {
+    // 이번에는 price 가 undefined 일 수 있으므로 크기 비교가 안 돼 에러를 발생시킨다
+    // 그래서 undefined 인 경우를 분기처리한다
+
+    if(price === undefined) return  false
+    return price > 10000;
 }
+
+// 이은 함수들은 다시 하나의 이름으로 함수 하나를 만든다
+// 함수의 합성은 정의역과 공역을 일치시키기만 하면 된다.
+const isExpensivePrice= (fruitName: string): boolean => {
+    return isExpensive((getPrice(fruitName)))
+}
+
+const main = () => {
+    // const price = getPrice( "orange")
+    // return isExpensive(price)
+    // 함수를 잇는다는 건 아래와 같이 어떤 함수의 출력을 입력으로 넘겨주는 것을 의미한다
+
+    // 타입이라는 건 나중에 문제가 생기지 않도록 미리 알려주는 것. 컴파일러가 이런 상황을 알려주지 않았다면 런타임 에러로 나왔을 것
+    // return isExpensive((getPrice("orange")))
+
+    return isExpensivePrice("orange")
+}
+
 
