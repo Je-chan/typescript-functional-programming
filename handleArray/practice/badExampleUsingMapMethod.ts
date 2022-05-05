@@ -44,7 +44,7 @@ const totalCaculator = (list: Array<Item>, getValue: (item: Item) => number) => 
    * forEach 는 부수효과를 일으키는 함수
    *
    * map, filter 를 연속으로 사용하면 성능이 나빠지는 거 아닌가?
-   * 그러나 협업과 유지를 위해서는 쉽게 이해할 수 있는 코드가 중요하다. 성능이 중요하다면 iterator, string 같은 자요구조로 자료를 더 적게 순회할 것
+   * 그러나 협업과 유지를 위해서는 쉽게 이해할 수 있는 코드가 중요하다. 성능이 중요하다면 iterator, string 같은 자요구조로 자료를 더 적게 순회할 것dfas
    */
   list.forEach(function(item) {
     if(!item.outOfStock) {
