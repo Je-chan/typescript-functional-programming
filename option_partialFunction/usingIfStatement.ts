@@ -43,6 +43,13 @@ const totalCalculator = (list: Array<Item>, getValue: (item: Item) => number) =>
 const totalCount= (list: Array<Item>): string => {
   const totalCount = totalCalculator(list, (item) => item.quantity);
 
+
+  return `<h2>전체 수량: ${totalCount}개</h2>`
+}
+
+const totalPrice = (list: Array<Item>): string => {
+  const totalPrice = totalCalculator(list, (item) => item.quantity * item.price);
+
   const totalDiscountPrice = totalCalculator(list, (item) => {
     let discountPrice = 0;
     if(item.discountPrice !== undefined) {
@@ -51,12 +58,8 @@ const totalCount= (list: Array<Item>): string => {
 
     return discountPrice * item.quantity
   })
-  return `<h2>전체 수량: ${totalCount - totalDiscountPrice}개 (총 ${totalDiscountPrice}원 할인)</h2>`
-}
 
-const totalPrice = (list: Array<Item>): string => {
-  const totalPrice = totalCalculator(list, (item) => item.quantity * item.price);
-  return `<h2>전체 가격: ${totalPrice}원</h2>`
+  return `<h2>전체 가격: ${totalPrice - totalDiscountPrice}원 (총 ${totalDiscountPrice}원 할인)</h2>`
 }
 
 
