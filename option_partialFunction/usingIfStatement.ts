@@ -1,0 +1,84 @@
+import {cart, Item} from './cart'
+
+const stockItem = (item: Item): string => {
+  let saleText = '';
+  let discountPrice = 0;
+  if(item.discountPrice !== undefined) {
+    saleText = `(${item.discountPrice}원 할인)`
+    discountPrice = item.discountPrice
+  }
+
+  return `
+    <li>
+      <h2>${item.name}</h2>
+      <div>가격: ${item.price - discountPrice} ${saleText}</div>
+      <div>수량: ${item.quantity}</div>
+    </li>
+  `
+}
+
+const outOfStockItem = (item: Item): string => `
+  <li class="gray">
+    <h2>${item.name} (품절)</h2> 
+    <div class="strike">가격: ${item.price}</div>  
+    <div class="strike">수량: ${item.quantity}</div>
+  </li>
+`
+
+const item = (item: Item): string => {
+  if(item.outOfStock) {
+    return outOfStockItem(item)
+  } else {
+    return stockItem(item)
+  }
+}
+
+const totalCalculator = (list: Array<Item>, getValue: (item: Item) => number) => {
+  return list
+    .filter(item => !item.outOfStock)
+    .map(getValue)
+    .reduce((total, value) => total + value, 0)
+}
+
+const totalCount= (list: Array<Item>): string => {
+  const totalCount = totalCalculator(list, (item) => item.quantity);
+
+  const totalDiscountPrice = totalCalculator(list, (item) => {
+    let discountPrice = 0;
+    if(item.discountPrice !== undefined) {
+      discountPrice = item.discountPrice
+    }
+
+    return discountPrice * item.quantity
+  })
+  return `<h2>전체 수량: ${totalCount - totalDiscountPrice}개 (총 ${totalDiscountPrice}원 할인)</h2>`
+}
+
+const totalPrice = (list: Array<Item>): string => {
+  const totalPrice = totalCalculator(list, (item) => item.quantity * item.price);
+  return `<h2>전체 가격: ${totalPrice}원</h2>`
+}
+
+
+const list = (list: Array<Item>) => {
+  return `
+  <ul>
+    ${list
+    // 1. 목록에 있는 아이템을 태그로 변경
+    .map(item)
+    // 2. 태그의 목록을 모두 하나의 문자열로 연결
+    .reduce((tags, tag) => tags + tag, "")
+  }
+  </ul>
+  `
+}
+
+const app = document.getElementById("app")
+if(app!==null) {
+  app.innerHTML = `
+        <h1>장바구니</h1>
+        ${list(cart)}
+        ${totalCount(cart)}
+        ${totalPrice(cart)}
+    `
+}
