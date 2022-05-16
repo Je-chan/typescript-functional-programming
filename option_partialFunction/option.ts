@@ -31,3 +31,18 @@ export const none = (): Option<never> => ({_tag: "None"})
 // 타입을 식별하는 _tag 를 사용.
 export const isSome = <A>(oa: Option<A>): oa is Some<A> => oa._tag === "Some"
 export const isNone = <A>(oa: Option<A>): oa is None => oa._tag === "None"
+
+// undefined 를 사용해서 값의 부재를 나타내는 타입을 Option 으로 변환해주는 함수
+export const fromUndefined = <A>(a:A | undefined) : Option<A> => {
+  if(a === undefined) return none();
+  return some(a);
+}
+
+// usingOptionType 에서 공통으로 사용되는 로직:
+// 1. 값이 없으면 지정된 값을 사용하고 (지정된 값이 아래 함수에서는 defaultValue)
+// 2. 값이 있다면 해당 값을 사용한다
+export const getOrElse = <A>(oa: Option<A>, defaultValue: A): A => {
+  // 1. 값이 없으면 지정된 값을 사용한다
+  if(isNone(oa)) return defaultValue;
+  return oa.value;
+}
