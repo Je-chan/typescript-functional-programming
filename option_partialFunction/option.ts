@@ -46,3 +46,17 @@ export const getOrElse = <A>(oa: Option<A>, defaultValue: A): A => {
   if(isNone(oa)) return defaultValue;
   return oa.value;
 }
+
+// Option 의 Map 함수 구현하기
+// 배열의 map 과 마찬가지로 두 가지의 인자를 받아야 한다. Option 타입의 값 하나와, 적용할 함수 하나
+export const OptionMap = <A, B>(oa: Option<A>, f:(a:A) => B) : Option<B> => {
+  // 값이 없으면 값이 없는 상태를 유지할 것
+  if(isNone(oa)) return oa;
+  // 값이 있으면 값을 함수에 적용할 것
+
+  // 밑의 리턴 타입은 Option<B> 가 아니라 순수 B 타입이 때문에 에러가 발생한다.
+  // return f(oa.value);
+
+  // 함수의 리턴값을 값이 있는 Option 인, Some 타입으로 만들어야 한다.
+  return some(f(oa.value))
+}
