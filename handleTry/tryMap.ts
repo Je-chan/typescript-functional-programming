@@ -82,8 +82,14 @@ const outOfStockItem = (item: ParsedItem): string => `
   </li>
 `
 
-const renderITem = (item: Item): string => {
+const renderItem = (item: Item): string => {
   try {
+    // parseItem 은 타입이 Try 이고 이 안에 파싱된 값이 들어 있는 형태
+    // 그렇기에 outOfStockItem 에 바로 적용할 수 없다(outOfItem 은 성공한 타입(parsedItem) 만을 취하기 때문)
+    // 이런 상황에서 필요로 하는 것이 map
+    // Option 에서는 값이 존재할 때만 map 함수를 사용한 것과 유사함
+    // Try 는 실패했을 때는 자신을 리턴하고, 성공일 경우에만 인자로 전달된 함수를 자기 자신의 데이터에 적용해서 그 결과를 리턴한다
+    // 이 과정에서 성공과 실패의 여부는 바뀌지 않는다. map 의 가장 중요한 것은 구조가 보존돼야 한다는 점
     const parsedItem = parseItem(item);
 
      if(item.outOfStock) {
@@ -92,6 +98,11 @@ const renderITem = (item: Item): string => {
       return stockItem(item);
     }
   } catch(e) {
+    // 기존에는 error 가 나면 화면에 그려주는 방식
+    // 그러나, 파싱이 실패하면 T.map 덕분에 parseError Type 의 값을 얻을 수 있다
+    // item 값을 받아서 HTML 로 바꾸었듯이 동일하게 parseError 의 타입을 HTML 문자열로 변경하는 함수를 만들어서 사용할 수 있다
+    // 다시 말하면, Error 타입의 값을 받아서 화면에 렌더링할 컴포넌트를 만들 수 있다는 것
+    // 그걸 errorItem 이라는 함수로 만들어서 사용한다
     return `
       <li style="color: red">
         <h2>${item.name}</h2>
@@ -99,6 +110,26 @@ const renderITem = (item: Item): string => {
       </li>
     `
   }
+}
+
+const errorItem = (e: ParseError) => `
+    <li style="color: red">
+       <h2>${e.name}</h2>
+       <div>${e.message}</div>
+    </li>
+ `
+
+// 불필요한 Try Catch 문도 없앨 수 있다
+const renderItemAfterUsingTryMap = (item: Item): string => {
+  const parsedItem = parseItem(item);
+  const render = T.map(parsedItem, (item) => {
+    if(item.outOfStock) {
+      return outOfStockItem(item);
+    } else {
+        return stockItem(item);
+    }
+  })
+  return T.getOrElse(render, errorItem)
 }
 
 const totalCalculator = (list: ArrayItem, getValue: (item: Item) => number) => {
