@@ -33,7 +33,7 @@ const validateItem = (item: Item) => {
 
 // Parsing 이 성공적으로 완료됐을 때의 타입
 type ParsedItem = {
-  _tag: "parsedITem"
+  _tag: "parsedItem"
 } & Item
 
 // Parsing 이 실패했을 때의 타입
