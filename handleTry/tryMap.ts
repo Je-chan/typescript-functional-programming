@@ -1,5 +1,4 @@
 import {cart, Item} from "../option_partialFunction/cart";
-import * as O from '../option_partialFunction/option'
 import * as T from './tryType'
 /**
  * 요구 사항
