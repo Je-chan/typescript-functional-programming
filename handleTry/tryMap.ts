@@ -31,9 +31,7 @@ const validateItem = (item: Item) => {
  */
 
 // Parsing 이 성공적으로 완료됐을 때의 타입
-type ParsedItem = {
-  _tag: "parsedItem"
-} & Item
+type ParsedItem = { _tag: "parsedItem"} & Item
 
 // Parsing 이 실패했을 때의 타입
 type ParseError = {
@@ -54,10 +52,7 @@ const parseItem = (item: Item): T.Try<ParseError, ParsedItem> => {
     })
   }
 
-  return T.success({
-    _tag: "parsedItem",
-    ...item
-  })
+  return T.success({_tag: "parsedItem", ...item})
 }
 
 
