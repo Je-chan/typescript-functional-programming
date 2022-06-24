@@ -1,4 +1,5 @@
 import {cart, Item} from "../option_partialFunction/cart";
+import * as O from '../option_partialFunction/option'
 import * as T from './tryType'
 /**
  * 요구 사항
@@ -31,7 +32,9 @@ const validateItem = (item: Item) => {
  */
 
 // Parsing 이 성공적으로 완료됐을 때의 타입
-type ParsedItem = { _tag: "parsedItem"} & Item
+type ParsedItem = {
+  _tag: "parsedItem"
+} & Item
 
 // Parsing 이 실패했을 때의 타입
 type ParseError = {
@@ -52,12 +55,16 @@ const parseItem = (item: Item): T.Try<ParseError, ParsedItem> => {
     })
   }
 
-  return T.success({_tag: "parsedItem", ...item})
+  return T.success({
+    _tag: "parsedItem",
+    ...item
+  })
 }
 
 
 
 type ArrayItem = Array<Item>
+type ArrayItemTryMap =  Array<T.Try<ParseError, ParsedItem>>
 
 const stockItem = (item: ParsedItem): string => {
   return `
@@ -114,7 +121,8 @@ const errorItem = (e: ParseError) => `
  `
 
 // 불필요한 Try Catch 문도 없앨 수 있다
-const renderItemAfterUsingTryMap = (item: Item): string => {
+// 그리고 이제 item 으로 받는 것들은 모두 Parsed 된 것들만 인자로 넣어주도록 한다 (그래야 위에 거 마냥 item에서 에러가 발생 X)
+const renderItemAfterUsingTryMap = (item: ParsedItem): string => {
   const parsedItem = parseItem(item);
   const render = T.map(parsedItem, (item) => {
     if(item.outOfStock) {
@@ -127,7 +135,6 @@ const renderItemAfterUsingTryMap = (item: Item): string => {
 }
 
 const totalCalculator = (list: ArrayItem, getValue: (item: Item) => number) => {
-  // 수량이 잘못된 함수만 제외할 것이기에 여기에서 Filter 를 이용
   return list
     .filter(item => {
       try{
@@ -141,7 +148,53 @@ const totalCalculator = (list: ArrayItem, getValue: (item: Item) => number) => {
     .reduce((total, value) => total + value, 0);
 }
 
+const totalCalculatorTryMap = (list: ArrayItemTryMap, getValue: (item: ParsedItem) => number) => {
+  return T.KeepSuccess(list)
+    // Array<T.Try<ParseError, ParsedItem>> => Array<ParsedItem>
+    .filter(item => {
+      try{
+        validateItem(item);
+        return !item.outOfStock
+      } catch(e) {
+        return false;
+      }
+    })
+    .map(getValue)
+    .reduce((total, value) => total + value, 0);
+}
 const totalCount = (list: ArrayItem): string => {
   const totalCount = totalCalculator(list, (item) => item.quantity)
   return `<h2>전체 수량: ${totalCount}</h2>`
 }
+
+
+const totalPrice = (list: Array<Item>): string => {
+  const totalPrice = totalCalculator(list, (item) => item.quantity * item.price);
+
+  const totalDiscountPrice = totalCalculator(list, (item) => {
+    const discountPrice = O.getOrElse(O.fromUndefined(item.discountPrice), 0);
+
+    return discountPrice * item.quantity
+  })
+
+  return `<h2>전체 가격: ${totalPrice - totalDiscountPrice}원 (총 ${totalDiscountPrice}원 할인)</h2>`
+}
+
+
+const list = (list: ArrayItemTryMap) => {
+  return `
+  <ul>
+    ${list
+    // 1. 목록에 있는 모든 아이템을 태그로 변경
+    .map(item => T.getOrElse(
+      T.map(item, parsedItem => renderItemAfterUsingTryMap(parsedItem)), 
+      errorItem
+    ))
+    // 2. 태그의 목록을 모두 하나의 문자열로 연
+    .reduce((tags, tag) => tags + tag, "")
+  }
+  </ul>
+  `
+}
+
+

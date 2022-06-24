@@ -50,3 +50,21 @@ export const map = <E, A, B>(ta: Try<E, A>, f: (a: A) => B): Try<E, B> => {
   if(isFailed(ta)) return ta;
   return success(f(ta.result))
 }
+
+// map 의 경우, if 구문에서 success 판정이 나면 R 값을 돌려줄 수 있지만
+// else 구문에서는 Array<R> 이라는 타입 때문에 리턴해줄 수가 없다. 그렇다고 값을 지정해주지 않으면 undefined 가 나오는 문
+// map 은 구조가 변하면 안 된다는 제한이 걸린다
+// flatMap 은 map 과 비슷하지만 구조를 변경할 수 있다
+
+// flatMap :: (A => Array<B>) => (Array<A> => Array<B>)
+// map     :: (A => B)        => (Array<A> => Array<B>)
+
+export const KeepSuccess =
+  <E, R>(tas: Array<Try<E, R>>): Array<R> => {
+    const ret = tas.flatMap((ta) => {
+      if(isSuccess(ta)) return [ta.result]
+      else return []
+    })
+
+    return ret;
+  }
