@@ -85,3 +85,27 @@ export const KeepSuccessForLoop = <E, R>(tas: Array<Try<E, R>>): Array<R> => {
 
   return ret;
 }
+
+/**
+ * flat 함수의 역할을 배열에만 한정짓지 않는다면 중첩된 효과를 하나의 효과로 푸는 과정이 된다
+ *
+ * Try에 flat 함수를 적용하면 타입이 어떻게 변경될까?
+ * flat :: Try<E, Try<E, A>> => Try<E, A>
+ */
+
+export const tryFlat = <E, A>(tta: Try<E, Try<E, A>>): Try<E, A> => {
+  // tta 가 성공이라면 result 를 그대로 return 하면 된다
+  if(isSuccess(tta)) return tta.result
+  // 실패했다면 tta 를 그대로 리턴하면 된다 (중첩되어 있지만 타입이 다른데 이게 어떻게 가능한가?)
+  /**
+   * Try 라는 타입은 실패했을 때와 성공했을 때 타입이 나뉜다.
+   * 실패했을 때는 첫 번째 타입 인자만 사용하고, 성공했을 때는 두 번째 타입 인자만 사용한다
+   * 그래서 함수에 주어진 인자가 성공이라면 Success 안에 Try<E, A> 가 담겨 있기에 인자의 result 를 리턴하면 되고
+   * 실패했을 때는 Try 의 실패한 것에 해당하는 타입 파라미터만 사용하기 때문에 return 타입과 동일한 Failure 타입이 된다
+   */
+  return tta;
+}
+
+export const tryFlatMap = <E, A, B>(ta: Try<E, A>, f: (a: A) => Try<E, B>):Try<E, B> => {
+  return tryFlat(map(ta, f));
+}
