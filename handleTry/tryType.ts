@@ -62,9 +62,26 @@ export const map = <E, A, B>(ta: Try<E, A>, f: (a: A) => B): Try<E, B> => {
 export const KeepSuccess =
   <E, R>(tas: Array<Try<E, R>>): Array<R> => {
     const ret = tas.flatMap((ta) => {
-      if(isSuccess(ta)) return [ta.result]
+      if (isSuccess(ta)) return [ta.result]
       else return []
     })
 
     return ret;
+}
+
+export const KeepSuccessForLoop = <E, R>(tas: Array<Try<E, R>>): Array<R> => {
+  const ret: Array<R> = [];
+
+  for(const ta of tas) {
+    if(isSuccess(ta)) {
+      // 기존의 구현과 가장 차이가 나는 곳.
+      // flatMap 을 사용하면 성공이나 실패의 여부에 따라 값으로 돌려주었고, 값이 무엇이 되어야 하는가를 선언적 사고가 이뤄진다
+      // Loop 를 사용하면 Loop 안에서 값을 리턴할 수 없기에 값을 중심으로 사고하기 어렵고, 성공했을 때 어떤 동작을 해야하는지 명력적인 동작을 이루게 된다
+      // 함수형 프로그래밍에서는 선언적 방식을 장려하고 있다
+      // 중요한 것은 부수효과가 무엇인지 알고 격리하는 방법만 안다면 이런 방식의 코드 작성이 얼마든지 가능하다
+      ret.push(ta.result);
+    }
   }
+
+  return ret;
+}
